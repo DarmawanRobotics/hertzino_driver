@@ -146,8 +146,15 @@ void StatusInterface::applyStartupSettings()
     }
   }
   if (freq_down_limit_ >= 0 || freq_up_limit_ >= 0) {
-    if (cam_->setBand(freq_down_limit_, freq_up_limit_, &err)) {
-      ROS_INFO("analysis band set to %d..%d kHz", freq_down_limit_, freq_up_limit_);
+    int down = freq_down_limit_, up = freq_up_limit_;
+    if (down < 0 || up < 0) {   // one limit given: the other one stays as the camera has it
+      if (const auto c = cam_->detectionConfig(&err)) {
+        down = down < 0 ? c->freq_down_limit : down;
+        up = up < 0 ? c->freq_up_limit : up;
+      }
+    }
+    if (cam_->setBand(down, up, &err)) {
+      ROS_INFO("analysis band set to %d..%d kHz", down, up);
     } else {
       ROS_WARN("~freq_down_limit / ~freq_up_limit: %s", err.c_str());
     }

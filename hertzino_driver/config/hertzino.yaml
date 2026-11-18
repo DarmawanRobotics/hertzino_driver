@@ -8,9 +8,9 @@ frame_id: hertzino_acoustic_optical_frame
 status_rate: 1.0             # Hz, detection state polling and the status topic
 config_period: 10.0          # s, re-read the detection settings
 
-# Applied at every (re)connection; -1 keeps what is set on the camera
+# Applied once the node reaches the camera; -1 keeps what is set on the camera
 db_limit: -1                 # imaging threshold, 0..100 dB
-freq_down_limit: -1          # analysis band, kHz (both, 2 to 20 kHz wide)
+freq_down_limit: -1          # analysis band, kHz, 2 to 20 kHz wide (one: the other kept)
 freq_up_limit: -1
 detect_times: -1             # detection time, s
 
