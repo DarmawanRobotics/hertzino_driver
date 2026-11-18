@@ -83,9 +83,18 @@ void StatusInterface::loop()
           last_login_error = err;
         }
         answering = false;
-        publish();
         backoff = std::min(30.0, backoff > 0.0 ? backoff * 2.0 : 2.0);
-        wait(backoff);
+        // the status goes on at its rate until the next attempt: "not connected", never silence
+        const auto retry = start + std::chrono::duration_cast<Clock::duration>(
+          std::chrono::duration<double>(backoff));
+        while (running_ && ros::ok()) {
+          publish();
+          const double left = std::chrono::duration<double>(retry - Clock::now()).count();
+          if (left <= 0.0) {
+            break;
+          }
+          wait(std::min(period, left));
+        }
         continue;
       }
       ROS_INFO("logged in to %s as %s", cam_->baseUrl().c_str(), cam_->config().user.c_str());
