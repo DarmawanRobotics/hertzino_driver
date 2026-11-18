@@ -341,8 +341,8 @@ WebSocketClient::Fill WebSocketClient::fill(double timeout, std::string * err)
     return Fill::kTimeout;
   }
   if (pr < 0) {
-    if (errno == EINTR) {
-      return Fill::kTimeout;
+    if (errno == EINTR) {   // a signal: nothing yet, the caller waits out its own deadline
+      return Fill::kData;
     }
     if (err) {
       *err = std::strerror(errno);
