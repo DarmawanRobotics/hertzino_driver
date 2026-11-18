@@ -73,7 +73,9 @@ bool openWith(cv::VideoCapture & cap, const CaptureConfig & c, const std::string
       std::to_string(static_cast<long long>(c.timeout_ms) * 1000) +
       "|fflags;nobuffer|flags;low_delay";
     ::setenv("OPENCV_FFMPEG_CAPTURE_OPTIONS", opts.c_str(), 0);
-#if CV_VERSION_MAJOR > 4 || (CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 5)
+// CAP_PROP_OPEN_TIMEOUT_MSEC and CAP_PROP_READ_TIMEOUT_MSEC came with OpenCV 4.5.3
+#if CV_VERSION_MAJOR > 4 || (CV_VERSION_MAJOR == 4 && (CV_VERSION_MINOR > 5 || \
+  (CV_VERSION_MINOR == 5 && CV_VERSION_REVISION >= 3)))
     const std::vector<int> params = {
       cv::CAP_PROP_OPEN_TIMEOUT_MSEC, c.timeout_ms,
       cv::CAP_PROP_READ_TIMEOUT_MSEC, c.timeout_ms,
