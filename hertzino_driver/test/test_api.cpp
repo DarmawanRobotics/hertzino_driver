@@ -268,6 +268,14 @@ TEST(Api, Bodies)
   EXPECT_EQ(numberFieldBody("value_of_gas", 0.5), R"({"value_of_gas":0.5})");
 }
 
+TEST(Api, LoginBodyOfAUserNameThatIsNotUtf8)   // no exception out of the status thread
+{
+  std::string body;
+  EXPECT_NO_THROW(body = loginBody("adm\xffin", "123456"));
+  EXPECT_EQ(body,
+    "{\"password\":\"7cb8406e5a99c917a60681762d7952c2\",\"username\":\"adm\xef\xbf\xbdin\"}");
+}
+
 TEST(Api, LogsPath)
 {
   LogQuery q;

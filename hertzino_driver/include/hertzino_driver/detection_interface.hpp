@@ -70,7 +70,7 @@ private:
   std::string frame_id_;
   double timeout_margin_{15.0};
   double photo_wait_{8.0};
-  double result_grace_{3.0};
+  double result_grace_{5.0};
 
   ros::Publisher detection_pub_;
   std::vector<ros::ServiceServer> services_;

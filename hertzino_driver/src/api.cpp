@@ -376,7 +376,9 @@ bool jsonReportsFailure(const std::string & body, std::string * message)
 
 std::string loginBody(const std::string & user, const std::string & password)
 {
-  return json{{"username", user}, {"password", loginPasswordHash(password)}}.dump();
+  // a user name that is not valid UTF-8 is sent with U+FFFD instead of throwing
+  return json{{"username", user}, {"password", loginPasswordHash(password)}}.dump(
+    -1, ' ', false, json::error_handler_t::replace);
 }
 
 std::string intFieldBody(const std::string & name, int value)

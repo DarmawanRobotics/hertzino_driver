@@ -2,7 +2,8 @@
 # End-to-end smoke test: hertzino.launch against test/fake_device.py on the loopback.
 # Status, WebSocket streams, settings, the detect action (live feedback, records fallback,
 # restart of continuous monitoring, cancel, timeout), records and files, leakage mode, the
-# camera node finding the RTSP path, token renewal and heartbeats. Needs a sourced workspace.
+# camera node finding the RTSP path, token renewal and heartbeats, the status while a login is
+# refused. Needs a sourced workspace.
 set -u
 # rospy / rostopic output into a pipe is block-buffered and lost when timeout kills it
 export PYTHONUNBUFFERED=1
@@ -157,6 +158,17 @@ check "set_leakage" 'monetary_unit_name: "USD"' \
   rosservice call $ns/set_leakage "{field: monetary_unit, value: 2}"
 check "detect a leak" "success=True state=detected type=leak intensity=46 leakage=1.25 l/min" \
   python3 "$here/detect_client.py" detect 1
+
+# ---- a refused login: the status goes on at its rate (not connected, why), never silence
+HERTZINO_PASSWORD=wrong-pass roslaunch hertzino_driver hertzino.launch namespace:=refused \
+  host:=127.0.0.1 port:="$port" camera:=false > "$work/refused.log" 2>&1 &
+refused=$!
+pids+=($refused)
+sleep 10   # past the first back-offs (2 s, 4 s)
+check "status while the login fails" "average rate: (0\.9|1\.0)" \
+  timeout 9 rostopic hz -w 5 /refused/status
+check "status says why" "wrong user or password" rostopic echo -n 1 /refused/status
+kill -INT "$refused" 2>/dev/null   # its retries stay out of the checks below
 
 # ---- camera node, sessions
 check "camera found the RTSP path" "RTSP path /live" cat "$work/launch.log"
