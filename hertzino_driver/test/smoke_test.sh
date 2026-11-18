@@ -162,11 +162,13 @@ check "detect a leak" "success=True state=detected type=leak intensity=46 leakag
 # ---- a refused login: the status goes on at its rate (not connected, why), never silence
 HERTZINO_PASSWORD=wrong-pass roslaunch hertzino_driver hertzino.launch namespace:=refused \
   host:=127.0.0.1 port:="$port" camera:=false > "$work/refused.log" 2>&1 &
-pids+=($!)
+refused=$!
+pids+=($refused)
 sleep 10   # past the first back-offs (2 s, 4 s)
 check "status while the login fails" "average rate: (0\.9|1\.0)" \
   timeout 9 rostopic hz -w 5 /refused/status
 check "status says why" "wrong user or password" rostopic echo -n 1 /refused/status
+kill -INT "$refused" 2>/dev/null   # its retries stay out of the checks below
 
 # ---- camera node, sessions
 check "camera found the RTSP path" "RTSP path /live" cat "$work/launch.log"
